@@ -14,8 +14,9 @@ env: # 设置环境变量
   # 设置时区
   TZ: Asia/Shanghai
   # 设置字体颜色
-  BLUE_FC: '\033[36m'
-  BLUE_BC: '\033[0m'
+  COLOR_BLUE: '\033[36m'
+  COLOR_YELLOW: '\033[33m\033[01m'
+  COLOR_BG: '\033[0m'
 
 jobs:
   # This workflow contains a single job called "update-my-hexo-blog-menu-job"
@@ -53,36 +54,38 @@ jobs:
       - name: '#5. Update blog menu'
         run: |
           UserName=Alex
-          echo -e ${BLUE_FC}$UserName${BLUE_BC}
+          echo -e ${COLOR_BLUE}$UserName${COLOR_BG}
           # 获取 workflow-action 项目中最近一次提交的作者邮箱
           UserEmail=`git log -1 --pretty=format:'%ae'`
-          echo -e ${BLUE_FC}$UserEmail{BLUE_BC}
+          echo -e ${COLOR_BLUE}$UserEmail${COLOR_BG}
           RemoteAddr="github.com/pudongping/pudongping.github.io"
           # REPO_ACCESS_TOKEN generated from https://github.com/pudongping/workflow-action/settings/secrets/actions/new
           RemoteAddr=https://${UserName}:${{secrets.REPO_ACCESS_TOKEN}}@${RemoteAddr}
-          echo -e ${BLUE_FC}$RemoteAddr{BLUE_BC}
+          echo -e ${COLOR_BLUE}$RemoteAddr${COLOR_BG}
           git config --global user.name ${UserName}
           git config --global user.email ${UserEmail}
+          echo -e ${COLOR_YELLOW}'----------------------------------'${COLOR_BG}
           git clone https://github.com/pudongping/pudongping.github.io ~/blog
           rm -rf ~/blog/source/menu/index.md
           mv ./go-scripts/daily_auto_generate_menu/blog-menu.md ~/blog/source/menu/index.md
           cd ~/blog
-          echo -e ${BLUE_FC}'git status output'{BLUE_BC}
+          echo -e ${COLOR_BLUE}'after updated source/menu/index.md file and git status output'${COLOR_BG}
           git status
-          echo -e ${BLUE_FC}'git remote -vvv before remote remove'{BLUE_BC}
+          echo -e ${COLOR_BLUE}'git remote -vvv before remote remove'${COLOR_BG}
           git remote -vvv
           git remote remove origin
           # 重新更换远程仓库地址，是为了有仓库的提交权限
           git remote add origin ${RemoteAddr}
-          echo -e ${BLUE_FC}'git remote -vvv after update remote'{BLUE_BC}
+          echo -e ${COLOR_BLUE}'git remote -vvv after update remote'${COLOR_BG}
           git remote -vvv
+          echo -e ${COLOR_YELLOW}'----------------------------------'${COLOR_BG}
           git add -A
           git commit -sm "Site updated:"`date +"%Y-%m-%d_%H:%M:%S"`
-          echo -e ${BLUE_FC}'attempt git pull origin main'{BLUE_BC}
+          echo -e ${COLOR_BLUE}'attempt git pull origin main'${COLOR_BG}
           git pull origin main
           # https://github.com/pudongping/pudongping.github.io 仓库的主分支为 main
-          echo -e ${BLUE_FC}'will git push -u origin main'{BLUE_BC}
+          echo -e ${COLOR_BLUE}'will git push -u origin main'${COLOR_BG}
           git push -u origin main
-          echo -e ${BLUE_FC}'see git logs'{BLUE_BC}
+          echo -e ${COLOR_BLUE}'see git logs'${COLOR_BG}
           # 查看一下提交记录
           git log -5 --oneline
