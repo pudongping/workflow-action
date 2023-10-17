@@ -1,0 +1,79 @@
+# 定时生成我自己的博客目录工作流
+name: Auto Generate Menu
+
+on:
+  # 在 master 分支发生 push 时执行
+  push:
+    branches:
+      - master
+  # 通过定时任务执行
+  schedule:
+    - cron: "30 10,23 * * *"
+
+env: # 设置环境变量
+  TZ: Asia/Shanghai
+
+jobs:
+  # This workflow contains a single job called "update-my-hexo-blog-menu-job"
+  update-my-hexo-blog-menu-job:
+    name: Update https://github.com/pudongping/pudongping.github.io repo's source/menu/index.md file.
+    # 运行在虚拟机环境 ubuntu-latest
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # 1. 通过 actions/checkout action 获取项目源码。官方 actions 库：https://github.com/actions
+      - name: '#1. Checkout codes'
+        uses: actions/checkout@master
+      # 2. 部署 Golang 环境
+      - name: '#2. Setup Go environment'
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.16.15'
+        # 设置环境变量
+        env:
+          GO111MODULE: auto
+      # 3. check
+      - name: '#3. Check software'
+        run: go version
+      - name: '#4. Crawler my blog title'
+        run: |
+          cd ./go-scripts/daily_auto_generate_menu
+          # 编译二进制文件
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o spider-blog-title spider_blog_title.go
+          # 执行二进制文件，抓取博客标题且生成博客目录文件
+          ./spider-blog-title
+          # 删除二进制文件
+          rm -rf ./spider-blog-title
+          # 回到项目根目录下
+          cd ../../
+      - name: '#5. Update blog menu'
+        run: |
+          UserName=Alex
+          echo $UserName
+          # 获取 workflow-action 项目中最近一次提交的作者邮箱
+          UserEmail=`git log -1 --pretty=format:'%ae'`
+          echo $UserEmail
+          RemoteAddr="github.com/pudongping/pudongping.github.io"
+          # REPO_ACCESS_TOKEN generated from https://github.com/pudongping/workflow-action/settings/secrets/actions/new
+          RemoteAddr=https://${UserName}:${{secrets.REPO_ACCESS_TOKEN}}@${RemoteAddr}
+          echo $RemoteAddr
+          git config --global user.name ${UserName}
+          git config --global user.email ${UserEmail}
+          git clone https://github.com/pudongping/pudongping.github.io ~/blog
+          rm -rf ~/blog/source/menu/index.md
+          mv ./go-scripts/daily_auto_generate_menu/blog-menu.md ~/blog/source/menu/index.md
+          cd ~/blog
+          git remote -vvv
+          git remote remove origin
+          git remote -vvv
+          echo ${RemoteAddr}
+          # 重新更换远程仓库地址，是为了有仓库的提交权限
+          git remote add origin ${RemoteAddr}
+          git remote -vvv
+          git add -A
+          git commit -sm "Site updated:"`date +"%Y-%m-%d_%H:%M:%S"`
+          git pull origin main
+          # https://github.com/pudongping/pudongping.github.io 仓库的主分支为 main
+          git push -u origin main
+          # 查看一下提交记录
+          git log --oneline
