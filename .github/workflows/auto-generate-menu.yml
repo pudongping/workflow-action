@@ -3,9 +3,9 @@ name: Auto Generate Menu
 
 on:
   # 在 master 分支发生 push 时执行
-  push:
-    branches:
-      - master
+  #push:
+  #  branches:
+  #    - master
   # 通过定时任务执行
   schedule:
     - cron: "30 10,23 * * *"
@@ -60,6 +60,7 @@ jobs:
           echo -e ${COLOR_BLUE}$UserEmail${COLOR_BG}
           RemoteAddr="github.com/pudongping/pudongping.github.io"
           # REPO_ACCESS_TOKEN generated from https://github.com/pudongping/workflow-action/settings/secrets/actions/new
+          # 因为这里涉及到了跨仓库提交，因此需要引进自定义变量 REPO_ACCESS_TOKEN，否则可以直接使用变量 ${{secrets.GITHUB_TOKEN}}，详见 https://docs.github.com/zh/actions/security-guides/automatic-token-authentication
           RemoteAddr=https://${UserName}:${{secrets.REPO_ACCESS_TOKEN}}@${RemoteAddr}
           echo -e ${COLOR_BLUE}$RemoteAddr${COLOR_BG}
           git config --global user.name ${UserName}
