@@ -3,9 +3,9 @@ name: Auto Generate Menu
 
 on:
   # 在 master 分支发生 push 时执行
-  #push:
-  #  branches:
-  #    - master
+  push:
+    branches:
+      - master
   # 通过定时任务执行
   schedule:
     - cron: "30 10,23 * * *"
@@ -81,7 +81,7 @@ jobs:
           git remote -vvv
           echo -e ${COLOR_YELLOW}'----------------------------------'${COLOR_BG}
           git add -A
-          git commit -sm "Site updated:"`date +"%Y-%m-%d_%H:%M:%S"`
+          git commit -sm "Auto generate menu:"`date +"%Y-%m-%d_%H:%M:%S"`
           echo -e ${COLOR_BLUE}'attempt git pull origin main'${COLOR_BG}
           git pull origin main
           # https://github.com/pudongping/pudongping.github.io 仓库的主分支为 main
