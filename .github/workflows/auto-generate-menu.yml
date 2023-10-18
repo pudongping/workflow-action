@@ -8,10 +8,13 @@ on:
 #      - master
   # 通过定时任务执行
   schedule:
-    - cron: "30 10,23 * * *"
+    # 每天的 9:30 和 23:30 执行（GitHub Action 默认使用的是 UTC 时间，北京时间是 UTC+8 区）
+    # 这里只能自己按照自己的时区算时间，官方并没有提供相应的解决方案。相关讨论地址（没人给出解决方案） https://github.com/orgs/community/discussions/13454
+    # 并且定时任务还有可能出现不准时的问题。
+    - cron: "30 1,15 * * *"
 
 env: # 设置环境变量
-  # 设置时区
+  # 设置时区（这里设置的是 jobs 执行环境的时区，也可以通过这个包进行设置 https://github.com/szenius/set-timezone）
   TZ: Asia/Shanghai
   # 设置字体颜色
   COLOR_BLUE: '\033[36m'
@@ -22,7 +25,7 @@ jobs:
   # This workflow contains a single job called "update-my-hexo-blog-menu-job"
   update-my-hexo-blog-menu-job:
     name: Update https://github.com/pudongping/pudongping.github.io repo's source/menu/index.md file.
-    # 运行在虚拟机环境 ubuntu-latest
+    # 运行在 ubuntu-latest 虚拟机环境中
     runs-on: ubuntu-latest
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -76,6 +79,8 @@ jobs:
           git remote -vvv
           git remote remove origin
           # 重新更换远程仓库地址，是为了有仓库的提交权限
+          # gitee: git remote add origin https://[用户名]:[密码]@gitee.com/{username}/{repository}
+          # GitHub: git remote add origin https://[用户名]:[${GITHUB_TOKEN}或者密码]@github.com/{username}/{repository}
           git remote add origin ${RemoteAddr}
           echo -e ${COLOR_BLUE}'git remote -vvv after update remote'${COLOR_BG}
           git remote -vvv
@@ -90,3 +95,7 @@ jobs:
           echo -e ${COLOR_BLUE}'see git logs'${COLOR_BG}
           # 查看一下提交记录
           git log -5 --oneline
+      - name: '#6. Show current time'
+        run: |
+          echo -e ${COLOR_BLUE}'The timezone is: '$TZ${COLOR_BG}
+          echo -e ${COLOR_BLUE}'Current time is: '`date`${COLOR_BG}

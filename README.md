@@ -1,6 +1,6 @@
 # workflow-action
 
-自己用到的一些 GitHub actions
+自己用到的一些 GitHub Actions 用作 CI/CD（持续集成/持续部署）。
 
 ## References
 
